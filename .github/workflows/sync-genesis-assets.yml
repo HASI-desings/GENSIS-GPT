@@ -1,0 +1,26 @@
+name: Sync GENESIS runtime assets
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [sync-genesis-assets]
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download runtime assets
+        run: |
+          set -e
+          mkdir -p assets/characters assets/animations
+          curl -L --fail --retry 3 -o assets/characters/character.glb https://raw.githubusercontent.com/programasweights/avatar/main/public/assets/character.glb
+          curl -L --fail --retry 3 -o assets/animations/AnimationLibrary_Godot_Standard.gltf https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/main/glTF/AnimationLibrary_Godot_Standard.gltf
+          curl -L --fail --retry 3 -o assets/animations/AnimationLibrary_Godot_Standard.bin https://raw.githubusercontent.com/J-Ponzo/gltf-universal-animation-library/main/glTF/AnimationLibrary_Godot_Standard.bin
+      - name: Commit assets
+        run: |
+          git config user.name "GENESIS Asset Sync"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets
+          git diff --cached --quiet || git commit -m "chore: add GENESIS runtime 3D assets"
+          git push
